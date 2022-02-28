@@ -822,15 +822,17 @@ void Charge::sum_band_k(void)
 			GlobalC::en.eband += GlobalC::wf.ekb[ik][ibnd] * GlobalC::wf.wg(ik, ibnd);
 			//std::cout << "\n ekb = " << GlobalC::wf.ekb[ik][ibnd] << " wg = " << GlobalC::wf.wg(ik, ibnd);
 
+			ModuleBase::timer::tick("Charge","sum_band_FFT");
 			ModuleBase::GlobalFunc::ZEROS( porter, GlobalC::pw.nrxx );
 			for (int ig = 0;ig < GlobalC::kv.ngk[ik] ; ig++)
 			{
 				porter[ GlobalC::pw.ig2fftw[GlobalC::wf.igk(ik, ig)] ] = GlobalC::wf.evc[ik](ibnd, ig);
 			}
 			GlobalC::pw.FFT_wfc.FFT3D(GlobalC::UFFT.porter, 1);
+			ModuleBase::timer::tick("Charge","sum_band_FFT");
 
 			const double w1 = GlobalC::wf.wg(ik, ibnd) / GlobalC::ucell.omega;
-
+			ModuleBase::timer::tick("Charge","sum_band_VMulV");
 			if (w1 != 0.0)
 			{
 				for (int ir=0; ir<GlobalC::pw.nrxx; ir++) 
@@ -838,6 +840,7 @@ void Charge::sum_band_k(void)
 					rho[GlobalV::CURRENT_SPIN][ir]+=w1* norm( porter[ir] );
 				}
 			}
+			ModuleBase::timer::tick("Charge","sum_band_VMulV");
 
 			//kinetic energy density
 			if (GlobalV::DFT_META)

@@ -49,7 +49,7 @@ void Stress_Func::stress_nl(ModuleBase::matrix& sigma)
 		// important here ! becp must set zero!!
 		// vkb: Beta(nkb,npw)
 		// becp(nkb,nbnd): <Beta(nkb,npw)|psi(nbnd,npw)>
-        ModuleBase::timer::tick("Stress", "cal_becp");
+        ModuleBase::timer::tick("Stress", "cal_becp_MMulM");
         becp.zero_out();
 		for (int ib=0; ib<GlobalV::NBANDS; ib++)
 		{
@@ -65,7 +65,7 @@ void Stress_Func::stress_nl(ModuleBase::matrix& sigma)
                 }
             }
         }
-        ModuleBase::timer::tick("Stress", "cal_becp");
+        ModuleBase::timer::tick("Stress", "cal_becp_MMulM");
 		//becp calculate is over , now we should broadcast this data.
         ModuleBase::timer::tick("Stress", "reduce_complex_double_pool");
 		Parallel_Reduce::reduce_complex_double_pool( becp.c, becp.size);
@@ -134,7 +134,7 @@ void Stress_Func::stress_nl(ModuleBase::matrix& sigma)
 				}     // end i
 				ModuleBase::timer::tick("Stress", "dbecp_noevc");
 
-				ModuleBase::timer::tick("Stress", "get_dbecp");
+				ModuleBase::timer::tick("Stress", "get_dbecp_MMulM");
 				for (int ib=0; ib<GlobalV::NBANDS; ib++)
 				{
 					///
@@ -150,7 +150,7 @@ void Stress_Func::stress_nl(ModuleBase::matrix& sigma)
 						}//end ig
 					}//end i
 				}//end ib
-                ModuleBase::timer::tick("Stress", "get_dbecp");
+                ModuleBase::timer::tick("Stress", "get_dbecp_MMulM");
 
 				//              don't need to reduce here, keep
 				//              dbecp different in each

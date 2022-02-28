@@ -372,6 +372,7 @@ void Hamilt_PW::h_psi(const std::complex<double> *psi_in, std::complex<double> *
 	{
 		tmhpsi = hpsi;
 		tmpsi_in = psi_in;
+		ModuleBase::timer::tick("Hamilt_PW","T_MMulV");
 		for(int ib = 0 ; ib < m; ++ib)
 		{
 			for(ig = 0;ig < GlobalC::wf.npw; ++ig)
@@ -397,6 +398,7 @@ void Hamilt_PW::h_psi(const std::complex<double> *psi_in, std::complex<double> *
 			tmhpsi += GlobalC::wf.npwx;
 			tmpsi_in += GlobalC::wf.npwx;
 		}
+		ModuleBase::timer::tick("Hamilt_PW","T_MMulV");
 	}
 
 	//------------------------------------
@@ -476,13 +478,17 @@ void Hamilt_PW::h_psi(const std::complex<double> *psi_in, std::complex<double> *
 			char transb = 'N';
 			if(m==1 && GlobalV::NPOL==1)
 			{
+				ModuleBase::timer::tick("Hamilt_PW","vnl_MMulV");
 				int inc = 1;
 				zgemv_(&transa, &GlobalC::wf.npw, &nkb, &ModuleBase::ONE, GlobalC::ppcell.vkb.c, &GlobalC::wf.npwx, psi_in, &inc, &ModuleBase::ZERO, becp.c, &inc);
+				ModuleBase::timer::tick("Hamilt_PW","vnl_MMulV");
 			}
 			else
 			{
 				int npm = GlobalV::NPOL * m;
+				ModuleBase::timer::tick("Hamilt_PW","vnl_MMulM");
 				zgemm_(&transa,&transb,&nkb,&npm,&GlobalC::wf.npw,&ModuleBase::ONE,GlobalC::ppcell.vkb.c,&GlobalC::wf.npwx,psi_in,&GlobalC::wf.npwx,&ModuleBase::ZERO,becp.c,&nkb);
+				ModuleBase::timer::tick("Hamilt_PW","vnl_MMulM");
 				//add_nonlocal_pp is moddified, thus tranpose not needed here.
 				//if(GlobalV::NONCOLIN)
 				//{
@@ -581,6 +587,7 @@ void Hamilt_PW::add_nonlocal_pp(
 	// number of projectors
 	int nkb = GlobalC::ppcell.nkb;
 
+ModuleBase::timer::tick("Hamilt_PW","nonlocalpp_MMulM1");
 	std::complex<double> *ps  = new std::complex<double> [nkb * GlobalV::NPOL * m];
     ModuleBase::GlobalFunc::ZEROS(ps, GlobalV::NPOL * m * nkb);
 
@@ -650,6 +657,7 @@ void Hamilt_PW::add_nonlocal_pp(
 			} //end na
 		} //end nt
 	}
+	ModuleBase::timer::tick("Hamilt_PW","nonlocalpp_MMulM1");
 
 	/*
     for (int ig=0;ig<GlobalC::wf.npw;ig++)
@@ -670,6 +678,7 @@ void Hamilt_PW::add_nonlocal_pp(
 	if(GlobalV::NPOL==1 && m==1)
 	{
 		int inc = 1;
+		ModuleBase::timer::tick("Hamilt_PW","nonlocalpp_MMulV2");
 		zgemv_(&transa,
 			&GlobalC::wf.npw,
 			&GlobalC::ppcell.nkb,
@@ -681,9 +690,11 @@ void Hamilt_PW::add_nonlocal_pp(
 			&ModuleBase::ONE,
 			hpsi_in,
 			&inc);
+		ModuleBase::timer::tick("Hamilt_PW","nonlocalpp_MMulV2");
 	}
 	else
 	{
+		ModuleBase::timer::tick("Hamilt_PW","nonlocalpp_MMulM2");
 		int npm = GlobalV::NPOL*m;
 		zgemm_(&transa,
 			&transb,
@@ -698,6 +709,7 @@ void Hamilt_PW::add_nonlocal_pp(
 			&ModuleBase::ONE,
 			hpsi_in,
 			&GlobalC::wf.npwx);
+		ModuleBase::timer::tick("Hamilt_PW","nonlocalpp_MMulM2");
 	}
 
 	//======================================================================

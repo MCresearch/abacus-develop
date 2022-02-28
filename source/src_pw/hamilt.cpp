@@ -260,7 +260,9 @@ void Hamilt::diagH_LAPACK(
         // calculate all eigenvalues
         //===========================
         hvec = hc;
+        ModuleBase::timer::tick("Hamilt","zhegv");
         LapackConnector::zhegv(1, 'V', 'U', nstart, hvec , ldh, sdum, ldh, e, work , lwork , rwork, info);
+        ModuleBase::timer::tick("Hamilt","zhegv");
     }
     else
     {
@@ -282,6 +284,7 @@ void Hamilt::diagH_LAPACK(
     	//=============================
     	int mm = nbands;
 
+ModuleBase::timer::tick("Hamilt","zhegvx");
         LapackConnector::zhegvx
         (
                 1,      //INTEGER
@@ -309,6 +312,7 @@ void Hamilt::diagH_LAPACK(
                 ifail,  //INTEGER array, dimension (N)
                 info    //INTEGER
         );
+ModuleBase::timer::tick("Hamilt","zhegvx");
 
         delete[] iwork;
         delete[] ifail;

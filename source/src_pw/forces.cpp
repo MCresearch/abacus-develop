@@ -690,6 +690,7 @@ void Forces::cal_force_nl(ModuleBase::matrix& forcenl)
         // important here ! becp must set zero!!
 		// vkb: Beta(nkb,npw)
 		// becp(nkb,nbnd): <Beta(nkb,npw)|psi(nbnd,npw)>
+        ModuleBase::timer::tick("Forces","forcenl_MMulM1");
         becp.zero_out();
         for (int ib=0; ib<GlobalV::NBANDS; ib++)
         {
@@ -702,6 +703,7 @@ void Forces::cal_force_nl(ModuleBase::matrix& forcenl)
             }
         }
         Parallel_Reduce::reduce_complex_double_pool( becp.c, becp.size);
+        ModuleBase::timer::tick("Forces","forcenl_MMulM1");
 
         //out.printcm_real("becp",becp,1.0e-4);
         // Calculate the derivative of beta,
@@ -727,6 +729,7 @@ void Forces::cal_force_nl(ModuleBase::matrix& forcenl)
                         vkb1(i, ig) = GlobalC::ppcell.vkb(i, ig) * ModuleBase::NEG_IMAG_UNIT * GlobalC::pw.get_G_cartesian_projection(GlobalC::wf.igk(ik, ig), 2);
                 }
 			}
+            ModuleBase::timer::tick("Forces","forcenl_MMulM2");
             for (int ib=0; ib<GlobalV::NBANDS; ib++)
             {
                 ///
@@ -741,6 +744,7 @@ void Forces::cal_force_nl(ModuleBase::matrix& forcenl)
                     }
                 }
             }
+            ModuleBase::timer::tick("Forces","forcenl_MMulM2");
         }// end ipol
 
 //		don't need to reduce here, keep dbecp different in each processor,
