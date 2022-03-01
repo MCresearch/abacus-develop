@@ -61,6 +61,7 @@ void Hamilt_PW::allocate(
 void Hamilt_PW::init_k(const int ik)
 {
     ModuleBase::TITLE("Hamilt_PW","init_k");
+	ModuleBase::timer::tick("Hamilt_PW","init_k");
 
 	// mohan add 2010-09-30
 	// (1) Which spin to use.
@@ -96,6 +97,7 @@ void Hamilt_PW::init_k(const int ik)
 
 	// (7) ik
 	GlobalV::CURRENT_K = ik;
+	ModuleBase::timer::tick("Hamilt_PW","init_k");
 
     return;
 }

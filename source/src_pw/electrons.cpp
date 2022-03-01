@@ -129,7 +129,9 @@ void Electrons::self_consistent(const int &istep)
     Symmetry_rho srho;
     for(int is=0; is<GlobalV::NSPIN; is++)
     {
+        ModuleBase::timer::tick("Electrons","srhobegin");
         srho.begin(is, GlobalC::CHR,GlobalC::pw, GlobalC::Pgrid, GlobalC::symm);
+        ModuleBase::timer::tick("Electrons","srhobegin");
     }
 
     // conv_elec is a member of Threshold_Elec
@@ -240,7 +242,9 @@ void Electrons::self_consistent(const int &istep)
 		Symmetry_rho srho;
 		for(int is=0; is<GlobalV::NSPIN; is++)
 		{
+            ModuleBase::timer::tick("Electrons","srhobegin");
 			srho.begin(is, GlobalC::CHR,GlobalC::pw, GlobalC::Pgrid, GlobalC::symm);
+            ModuleBase::timer::tick("Electrons","srhobegin");
 		}
 
         //(7) compute magnetization, only for LSDA(spin==2)
@@ -275,7 +279,9 @@ void Electrons::self_consistent(const int &istep)
             // rho contain the output charge density.
             // in other cases rhoin contains the mixed charge density
             // (the new input density) while rho is unchanged.
+            ModuleBase::timer::tick("Electrons","mix_rho");
             GlobalC::CHR.mix_rho(dr2,diago_error,GlobalV::DRHO2,iter,conv_elec);
+            ModuleBase::timer::tick("Electrons","mix_rho");
 
             //if(GlobalV::MY_RANK==0)
             //{
@@ -304,6 +310,7 @@ void Electrons::self_consistent(const int &istep)
 
         if (!conv_elec)
         {
+            ModuleBase::timer::tick("Electrons","v_of_rho");
             // not converged yet, calculate new potential from mixed charge density
             GlobalC::pot.vr = GlobalC::pot.v_of_rho(GlobalC::CHR.rho, GlobalC::CHR.rho_core);
 
@@ -313,6 +320,7 @@ void Electrons::self_consistent(const int &istep)
             // using the mixed charge density.
             // so delta_escf corrects for this difference at first order.
             GlobalC::en.delta_escf();
+            ModuleBase::timer::tick("Electrons","v_of_rho");
         }
         else
         {
@@ -344,12 +352,14 @@ void Electrons::self_consistent(const int &istep)
         // output for tmp.
         for(int is=0; is<GlobalV::NSPIN; is++)
         {
+            ModuleBase::timer::tick("Electrons","write_rho");
             std::stringstream ssc;
             std::stringstream ss1;
             ssc << GlobalV::global_out_dir << "tmp" << "_SPIN" << is + 1 << "_CHG";
             GlobalC::CHR.write_rho(GlobalC::CHR.rho_save[is], is, iter, ssc.str(), 3);//mohan add 2007-10-17
 			ss1 << GlobalV::global_out_dir << "tmp" << "_SPIN" << is + 1 << "_CHG.cube";
 			GlobalC::CHR.write_rho_cube(GlobalC::CHR.rho_save[is], is, ssc.str(), 3);
+            ModuleBase::timer::tick("Electrons","write_rho");
         }
 
         if(GlobalC::wf.out_wf == 1 || GlobalC::wf.out_wf == 2)

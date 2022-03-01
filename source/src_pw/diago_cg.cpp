@@ -42,6 +42,7 @@ void Diago_CG::diag
     // Calls h_1phi and s_1phi to calculate H|phi> and S|phi>
     // Works for generalized eigenvalue problem (US pseudopotentials) as well
     //-------------------------------------------------------------------
+    ModuleBase::timer::tick("Diago_CG", "allocateZero");
     std::complex<double> *sphi = new std::complex<double>[dim]();
     std::complex<double> *scg  = new std::complex<double>[dim]();
     std::complex<double> *hphi = new std::complex<double>[dim]();
@@ -60,18 +61,27 @@ void Diago_CG::diag
 	ModuleBase::GlobalFunc::ZEROS(pphi, dim);
 	ModuleBase::GlobalFunc::ZEROS(lagrange, n_band);
 	ModuleBase::GlobalFunc::ZEROS(phi_m, dim);
+    ModuleBase::timer::tick("Diago_CG", "allocateZero");
 
     for (int m=0; m<n_band; m++)
     {
         if (test_cg>2) GlobalV::ofs_running << "Diagonal Band : " << m << std::endl;
         for (int i=0; i<dim; i++) phi_m[i] = phi(m, i);
 
+        ModuleBase::timer::tick("Diago_CG", "s_1psi");
         GlobalC::hm.hpw.s_1psi(dim, phi_m, sphi); // sphi = S|psi(m)>
+        ModuleBase::timer::tick("Diago_CG", "s_1psi");
+        ModuleBase::timer::tick("Diago_CG", "schmit_orth");
         this->schmit_orth(dim, dmx, m, phi, sphi, phi_m);
+        ModuleBase::timer::tick("Diago_CG", "schmit_orth");
 
+        ModuleBase::timer::tick("Diago_CG", "h_1psi");
         GlobalC::hm.hpw.h_1psi(dim , phi_m, hphi, sphi);
+        ModuleBase::timer::tick("Diago_CG", "h_1psi");
 
+        ModuleBase::timer::tick("Diago_CG", "ddot_real");
         e[m] = this->ddot_real(dim, phi_m, hphi );
+        ModuleBase::timer::tick("Diago_CG", "ddot_real");
 
         int iter = 0;
         double gg_last = 0.0;
@@ -80,12 +90,20 @@ void Diago_CG::diag
         bool converged = false;
         for (iter = 0;iter < maxter;iter++)
         {
+            ModuleBase::timer::tick("Diago_CG", "calculate_gradient");
             this->calculate_gradient( precondition, dim, hphi, sphi, g, pphi );
+            ModuleBase::timer::tick("Diago_CG", "calculate_gradient");
+            ModuleBase::timer::tick("Diago_CG", "orthogonal_gradient");
             this->orthogonal_gradient( dim,dmx, g, scg, lagrange, phi, m);
+            ModuleBase::timer::tick("Diago_CG", "orthogonal_gradient");
+            ModuleBase::timer::tick("Diago_CG", "calculate_gamma_cg");
             this->calculate_gamma_cg( iter, dim, precondition, g, scg,
 			g0, cg, gg_last, cg_norm, theta, phi_m);// scg used as sg
+            ModuleBase::timer::tick("Diago_CG", "calculate_gamma_cg");
+            ModuleBase::timer::tick("Diago_CG", "update_psi");
             converged = this->update_psi( dim, cg_norm, theta, pphi, cg, scg, phi_m ,
 			e[m], eps, hphi, sphi); // pphi is used as hcg
+            ModuleBase::timer::tick("Diago_CG", "update_psi");
             if ( converged ) break;
         }//end iter
 

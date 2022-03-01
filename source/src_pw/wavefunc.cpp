@@ -271,9 +271,12 @@ void wavefunc::LCAO_in_pw_k_q(const int &ik, ModuleBase::ComplexMatrix &wvf, Mod
 void wavefunc::diago_PAO_in_pw_k(const int &ik, ModuleBase::ComplexMatrix &wvf)
 {
 	ModuleBase::TITLE("wavefunc","diago_PAO_in_pw_k");
+	ModuleBase::timer::tick("wavefunc","diago_PAO_in_pw_k");
 
 	GlobalC::hm.hpw.init_k(ik);
     this->diago_PAO_in_pw_k2(ik, wvf);
+
+	ModuleBase::timer::tick("wavefunc","diago_PAO_in_pw_k");
 
 	return;
 }
@@ -289,21 +292,29 @@ void wavefunc::diago_PAO_in_pw_k2(const int &ik, ModuleBase::ComplexMatrix &wvf)
 	if(GlobalV::test_wf)ModuleBase::GlobalFunc::OUT(GlobalV::ofs_running, "starting_nw", starting_nw);
 	if(start_wfc.substr(0,6)=="atomic")
 	{
+		ModuleBase::timer::tick("wavefunc","atomic_wfc");
 		this->atomic_wfc(ik, this->npw, GlobalC::ucell.lmax_ppwf, wfcatom, GlobalC::ppcell.tab_at, GlobalV::NQX, GlobalV::DQ);
+		ModuleBase::timer::tick("wavefunc","atomic_wfc");
 		if( start_wfc == "atomic+random" && starting_nw == GlobalC::ucell.natomwfc )//added by qianrui 2021-5-16
 		{
+			ModuleBase::timer::tick("wavefunc","atomicrandom");
 			this->atomicrandom(wfcatom,0,starting_nw,ik);
+			ModuleBase::timer::tick("wavefunc","atomicrandom");
 		}
 
 		//====================================================
 		// If not enough atomic wfc are available, complete
 		// with random wfcs
 		//====================================================
+		ModuleBase::timer::tick("wavefunc","random");
 		this->random(wfcatom, GlobalC::ucell.natomwfc, GlobalV::NBANDS, ik);
+		ModuleBase::timer::tick("wavefunc","random");
 	}
 	else if(start_wfc=="random")
 	{
+		ModuleBase::timer::tick("wavefunc","random");
 		this->random(wfcatom,0,GlobalV::NBANDS,ik);
+		ModuleBase::timer::tick("wavefunc","random");
 	}
 
 	// (7) Diago with cg method.
@@ -312,7 +323,9 @@ void wavefunc::diago_PAO_in_pw_k2(const int &ik, ModuleBase::ComplexMatrix &wvf)
 	//if(GlobalV::DIAGO_TYPE == "cg") xiaohui modify 2013-09-02
 	if(GlobalV::KS_SOLVER=="cg") //xiaohui add 2013-09-02
 	{
+		ModuleBase::timer::tick("wavefunc","diagH_subspace");
 		GlobalC::hm.diagH_subspace(ik ,starting_nw, GlobalV::NBANDS, wfcatom, wfcatom, etatom);
+		ModuleBase::timer::tick("wavefunc","diagH_subspace");
 	}
 
 	/*
@@ -345,6 +358,8 @@ void wavefunc::wfcinit_k(void)
 {
 	ModuleBase::TITLE("wavefunc","wfcinit_k");
 
+    ModuleBase::timer::tick("wavefunc","wfcinit_k");
+
 	if(mem_saver)
 	{
 		return;
@@ -368,6 +383,7 @@ void wavefunc::wfcinit_k(void)
 		}
 #endif
 	}
+	ModuleBase::timer::tick("wavefunc","wfcinit_k");
 
 	//---------------------------------------------------
 	//  calculte the overlap <i,0 | e^{i(q+G)r} | j,R>
