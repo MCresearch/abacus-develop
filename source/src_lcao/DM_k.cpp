@@ -162,10 +162,12 @@ inline void cal_DM_ATOM(
                     break;
 				}
             } // ib
+            ModuleBase::timer::tick("LCAO_Charge", "cal_dk_k_MMulM");
             zgemm_(&transa, &transb, &nw2, &nw1, &nRow, &alpha,
                 &wfc[ibStart][iw2_lo], &gt.lgd, 
                 WFC_PHASE, &nw1,
-                &beta, DM, &nw2);           
+                &beta, DM, &nw2);
+            ModuleBase::timer::tick("LCAO_Charge", "cal_dk_k_MMulM");
 
             atom2start+=nw1*nw2;
         } // ia2
@@ -314,6 +316,7 @@ void Local_Orbital_Charge::cal_dk_k(const Grid_Technique &gt)
                     ModuleBase::GlobalFunc::ZEROS(DM_ATOM[is], ng);
 				}
                 ModuleBase::GlobalFunc::ZEROS(WFC_PHASE, GlobalV::NBANDS*nw1);
+                ModuleBase::timer::tick("LCAO_Charge", "cal_DM_ATOM");
                 if(GlobalV::NSPIN!=4)
 				{
 					cal_DM_ATOM(gt, fac, RA, ca, iw1_lo, nw1, gstart, WFC_PHASE, DM_ATOM);
@@ -322,6 +325,7 @@ void Local_Orbital_Charge::cal_dk_k(const Grid_Technique &gt)
 				{
 					cal_DM_ATOM_nc(gt, fac, RA, ca, iw1_lo, nw1, gstart, WFC_PHASE, DM_ATOM);
 				}
+                ModuleBase::timer::tick("LCAO_Charge", "cal_DM_ATOM");
                 ++ca;
 
                 if(GlobalV::NSPIN!=4)

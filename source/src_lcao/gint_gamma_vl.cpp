@@ -114,6 +114,7 @@ void Gint_Gamma::cal_meshball_vlocal(
                     cal_pair_num += cal_flag[ib][ia1] && cal_flag[ib][ia2];
                 }
 
+                ModuleBase::timer::tick("Gint_Gamma","vlocal_MMulM");
                 const int n=block_size[ia2];
                 if(cal_pair_num>ib_length/4)
                 {
@@ -136,6 +137,7 @@ void Gint_Gamma::cal_meshball_vlocal(
                         }
                     }
                 }
+                ModuleBase::timer::tick("Gint_Gamma","vlocal_MMulM");
 			}
 		}
 	}
@@ -394,26 +396,34 @@ Gint_Tools::Array_Pool<double> Gint_Gamma::gamma_vlocal(const double*const vloca
 						//------------------------------------------------------------------
 						// compute atomic basis phi(r) with both radial and angular parts
 						//------------------------------------------------------------------
-						const Gint_Tools::Array_Pool<double> psir_ylm = Gint_Tools::cal_psir_ylm(
+                        ModuleBase::timer::tick("Gint_Gamma", "psir_ylm");
+                        const Gint_Tools::Array_Pool<double> psir_ylm = Gint_Tools::cal_psir_ylm(
 							na_grid, LD_pool, grid_index, delta_r,
 							block_index, block_size, cal_flag);
+                        ModuleBase::timer::tick("Gint_Gamma", "psir_ylm");
 
-						//------------------------------------------------------------------
+                        //------------------------------------------------------------------
 						// extract the local potentials.
 						//------------------------------------------------------------------
-						double *vldr3 = this->get_vldr3(vlocal, ncyz, ibx, jby, kbz);
+                        ModuleBase::timer::tick("Gint_Gamma", "get_vldr3");
+                        double *vldr3 = this->get_vldr3(vlocal, ncyz, ibx, jby, kbz);
+                        ModuleBase::timer::tick("Gint_Gamma", "get_vldr3");
 
+                        ModuleBase::timer::tick("Gint_Gamma", "psir_vlbr3");
                         const Gint_Tools::Array_Pool<double> psir_vlbr3 = get_psir_vlbr3(
                                 na_grid, LD_pool, block_index, cal_flag, vldr3, psir_ylm.ptr_2D);
+                        ModuleBase::timer::tick("Gint_Gamma", "psir_vlbr3");
 
-						//------------------------------------------------------------------
+                        //------------------------------------------------------------------
 						// calculate <phi_i|V|phi_j>
 						//------------------------------------------------------------------
-						this->cal_meshball_vlocal(
+                        ModuleBase::timer::tick("Gint_Gamma", "meshball_vlocal");
+                        this->cal_meshball_vlocal(
 							na_grid, LD_pool, block_iw, block_size, block_index, cal_flag,
 							vldr3, psir_ylm.ptr_2D, psir_vlbr3.ptr_2D, lgd_now, GridVlocal_thread.ptr_2D);
-						
-						free(vldr3);		vldr3=nullptr;
+                        ModuleBase::timer::tick("Gint_Gamma", "meshball_vlocal");
+
+                        free(vldr3);		vldr3=nullptr;
 						free(block_iw);		block_iw=nullptr;
 						free(block_index);		block_index=nullptr;
 						free(block_size);		block_size=nullptr;

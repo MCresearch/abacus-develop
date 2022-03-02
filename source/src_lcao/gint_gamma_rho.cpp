@@ -76,6 +76,7 @@ void Gint_Gamma::cal_band_rho(
                 cal_num += cal_flag[ib][ia1];
             }
             // if enough cal_flag is nonzero
+            ModuleBase::timer::tick("Gint_Gamma","bandrho_MMulM");
             if(cal_num>ib_length/4)
             {
                 dsymm_(&side, &uplo, &block_size[ia1], &ib_length, 
@@ -97,6 +98,7 @@ void Gint_Gamma::cal_band_rho(
                     }
                 }
             }
+            ModuleBase::timer::tick("Gint_Gamma","bandrho_MMulM");
             
             //ModuleBase::GlobalFunc::OUT(GlobalV::ofs_running, "diagonal part of psir_DM done");
             for (int ia2=ia1+1; ia2<na_grid; ++ia2)
@@ -127,6 +129,7 @@ void Gint_Gamma::cal_band_rho(
                     cal_pair_num += cal_flag[ib][ia1] && cal_flag[ib][ia2];
                 }
                 const int iw2_lo=block_iw[ia2];
+                ModuleBase::timer::tick("Gint_Gamma", "bandrho_MMulM");
                 if(cal_pair_num>ib_length/4)
                 {
                     dgemm_(&transa, &transb, &block_size[ia2], &ib_length, &block_size[ia1], 
@@ -147,16 +150,19 @@ void Gint_Gamma::cal_band_rho(
                         }
                     }
                 }
+                ModuleBase::timer::tick("Gint_Gamma", "bandrho_MMulM");
                 //ModuleBase::GlobalFunc::OUT(GlobalV::ofs_running, "upper triangle part of psir_DM done, atom2", ia2);
             }// ia2
         } // ia1
-    
+
+        ModuleBase::timer::tick("Gint_Gamma", "bandrho_ddot");
         for(int ib=0; ib<GlobalC::pw.bxyz; ++ib)
         {
             const double r = ddot_(&block_index[na_grid], psir_ylm[ib], &inc, psir_DM.ptr_2D[ib], &inc);
             const int grid = vindex[ib];
             rho.ptr_2D[is][grid] += r;
         }
+        ModuleBase::timer::tick("Gint_Gamma", "bandrho_ddot");
     } // end is
 }
 
@@ -234,16 +240,19 @@ Gint_Tools::Array_Pool<double> Gint_Gamma::gamma_charge(const double*const*const
 
 						// set up band matrix psir_ylm and psir_DM
 						const int LD_pool = max_size*GlobalC::ucell.nwmax;
-						
-						const Gint_Tools::Array_Pool<double> psir_ylm = Gint_Tools::cal_psir_ylm(
+                        ModuleBase::timer::tick("Gint_Gamma", "psir_ylm");
+                        const Gint_Tools::Array_Pool<double> psir_ylm = Gint_Tools::cal_psir_ylm(
 							na_grid, LD_pool, grid_index, delta_r,
 							block_index, block_size, 
 							cal_flag);
-						
-						this->cal_band_rho(na_grid, LD_pool, block_iw, block_size, block_index,
-							cal_flag, psir_ylm.ptr_2D, vindex, DM, rho);
+                        ModuleBase::timer::tick("Gint_Gamma", "psir_ylm");
 
-						free(vindex);			vindex=nullptr;
+                        ModuleBase::timer::tick("Gint_Gamma", "cal_band_rho");
+                        this->cal_band_rho(na_grid, LD_pool, block_iw, block_size, block_index,
+							cal_flag, psir_ylm.ptr_2D, vindex, DM, rho);
+                        ModuleBase::timer::tick("Gint_Gamma", "cal_band_rho");
+
+                        free(vindex);			vindex=nullptr;
 						free(block_size);		block_size=nullptr;
 						free(block_iw);			block_iw=nullptr;
 						free(block_index);		block_index=nullptr;

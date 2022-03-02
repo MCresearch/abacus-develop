@@ -296,9 +296,10 @@ inline void cal_pvpR_reduced(int size, int LD_pool, int grid_index,
 						ia2, iat2, id2, T2, 
 						distance, find_start, find_end);
 
-				const int iatw = DM_start + GlobalC::LNNR.find_R2st[iat1][offset];	
+				const int iatw = DM_start + GlobalC::LNNR.find_R2st[iat1][offset];
 
-			    if(cal_num>GlobalC::pw.bxyz/4)
+                ModuleBase::timer::tick("Gint_K", "vlocal_MMulM");
+                if(cal_num>GlobalC::pw.bxyz/4)
 			    {
     				//if(iw1_lo<=iw2_lo)
     				//{
@@ -326,7 +327,8 @@ inline void cal_pvpR_reduced(int size, int LD_pool, int grid_index,
             			}
         			//}
     			}
-			}
+                ModuleBase::timer::tick("Gint_K", "vlocal_MMulM");
+            }
 		}
 	}
 }
@@ -457,12 +459,14 @@ void Gint_k::cal_vlocal_k(const double *vrs1, const Grid_Technique &GridT, const
 				//--------------------------------- 
 				// get the wave functions in this
 				// grid.
-				//--------------------------------- 
-				cal_psir_ylm(size, grid_index, delta_r, distance,
+				//---------------------------------
+                ModuleBase::timer::tick("Gint_k", "cal_psir_ylm");
+                cal_psir_ylm(size, grid_index, delta_r, distance,
 						at, block_index, block_iw, block_size, 
 						cal_flag, psir_ylm);
+                ModuleBase::timer::tick("Gint_k", "cal_psir_ylm");
 
-				int bindex = 0;
+                int bindex = 0;
 				// z is the fastest,
 				for(int ii=0; ii<GlobalC::pw.bx; ii++)
 				{
@@ -482,6 +486,7 @@ void Gint_k::cal_vlocal_k(const double *vrs1, const Grid_Technique &GridT, const
 
 				if(this->reduced)
 				{
+                    ModuleBase::timer::tick("Gint_k", "cal_pvpR_reduced");
 #ifdef _OPENMP
 					cal_pvpR_reduced(size, LD_pool, grid_index, 
 									ibx, jby, kbz, 
@@ -495,7 +500,8 @@ void Gint_k::cal_vlocal_k(const double *vrs1, const Grid_Technique &GridT, const
 									vldr3, psir_ylm, psir_vlbr3, 
 									distance, cal_flag, this->pvpR_reduced[spin]);
 #endif
-				}
+                    ModuleBase::timer::tick("Gint_k", "cal_pvpR_reduced");
+                }
 				else
 				{
 					//this->evaluate_pvpR_full(grid_index, size, psir_ylm, cal_flag, vldr3);

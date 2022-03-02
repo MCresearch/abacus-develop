@@ -222,12 +222,14 @@ inline void cal_band_rho(
 				//const int offset=AllOffset[ia1][ia2];
 				assert(offset < GlobalC::LNNR.nad[iat1]);
 				
-				const int DM_start = GlobalC::LNNR.nlocstartg[iat1]+ GlobalC::LNNR.find_R2st[iat1][offset];					
-				dgemm_(&trans, &trans, &block_size[ia1], &GlobalC::pw.bxyz, &block_size[ia1], &alpha_diag,
+				const int DM_start = GlobalC::LNNR.nlocstartg[iat1]+ GlobalC::LNNR.find_R2st[iat1][offset];
+                ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+                dgemm_(&trans, &trans, &block_size[ia1], &GlobalC::pw.bxyz, &block_size[ia1], &alpha_diag,
 					&GlobalC::LOC.DM_R[is][DM_start], &block_size[ia1], 
 					&psir_ylm[0][idx1], &LD_pool,  
 					&beta, &psir_DM[0][idx1], &LD_pool);
-			}
+                ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+            }
 			else if(cal_num>0)
 			{
 				//find offset
@@ -262,7 +264,8 @@ inline void cal_band_rho(
 				assert(offset < GlobalC::LNNR.nad[iat1]);
 				
 				const int DM_start = GlobalC::LNNR.nlocstartg[iat1]+ GlobalC::LNNR.find_R2st[iat1][offset];
-				for(int ib=0; ib<GlobalC::pw.bxyz; ++ib					)
+                ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+                for(int ib=0; ib<GlobalC::pw.bxyz; ++ib					)
 				{
     				if(cal_flag[ib][ia1])
     				{
@@ -272,7 +275,8 @@ inline void cal_band_rho(
 					            &beta, &psir_DM[ib][idx1], &inc);
     				}
 				}
-			}
+                ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+            }
 			//ia2>ia1
 			for(int ia2=ia1+1; ia2<size; ++ia2)
 			{			
@@ -326,11 +330,13 @@ inline void cal_band_rho(
 
     				const int DM_start = GlobalC::LNNR.nlocstartg[iat1]+ GlobalC::LNNR.find_R2st[iat1][offset];
 
-    				dgemm_(&trans, &trans, &block_size[ia2], &GlobalC::pw.bxyz, &block_size[ia1], &alpha_nondiag,
+                    ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+                    dgemm_(&trans, &trans, &block_size[ia2], &GlobalC::pw.bxyz, &block_size[ia1], &alpha_nondiag,
     					&GlobalC::LOC.DM_R[is][DM_start], &block_size[ia2], 
     					&psir_ylm[0][idx1], &LD_pool,
     					&beta, &psir_DM[0][idx2], &LD_pool);
-				}
+                    ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+                }
 				else if(cal_num>0)
 				{
     				const int iw2_lo=block_iw[ia2];
@@ -374,7 +380,8 @@ inline void cal_band_rho(
     				assert(offset < GlobalC::LNNR.nad[iat1]);
 
     				const int DM_start = GlobalC::LNNR.nlocstartg[iat1]+ GlobalC::LNNR.find_R2st[iat1][offset];
-    				for(int ib=0; ib<GlobalC::pw.bxyz; ++ib					)
+                    ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+                    for(int ib=0; ib<GlobalC::pw.bxyz; ++ib					)
     				{
         				if(cal_flag[ib][ia1] && cal_flag[ib][ia2])
         				{
@@ -384,19 +391,22 @@ inline void cal_band_rho(
             					&beta, &psir_DM[ib][idx2], &inc);
         				}
     				}
-				} // cal_num
+                    ModuleBase::timer::tick("Gint_K", "bandrho_MMulM");
+                } // cal_num
 			}// ia2
 		} // ia1
 		
 		// calculate rho
 		double *rhop = GlobalC::CHR.rho[is];
-		for(int ib=0; ib<GlobalC::pw.bxyz; ++ib)
+        ModuleBase::timer::tick("Gint_K", "bandrho_ddot");
+        for(int ib=0; ib<GlobalC::pw.bxyz; ++ib)
 		{
 			double r=ddot_(&block_index[size], psir_ylm[ib], &inc, psir_DM[ib], &inc);
 			const int grid = vindex[ib];
 			rhop[ grid ] += r;
 		}
-	}
+        ModuleBase::timer::tick("Gint_K", "bandrho_ddot");
+    }
 }
 
 
@@ -489,13 +499,14 @@ void Gint_k::cal_rho_k(void)
 				const int size = GlobalC::GridT.how_many_atoms[grid_index];
 				if(size==0) continue;
 				setVindex(ncyz, ibx, jby, kbz, vindex);
-				//ModuleBase::timer::tick("Gint_k","cal_psir_ylm");
+				ModuleBase::timer::tick("Gint_k","cal_psir_ylm");
 				cal_psir_ylm(size, grid_index, delta_r,
 						at, uc, block_index, block_iw, block_size, 
 						cal_flag, psir_ylm);
-				//ModuleBase::timer::tick("Gint_k","cal_psir_ylm");
+				ModuleBase::timer::tick("Gint_k","cal_psir_ylm");
 
-				cal_band_rho(
+                ModuleBase::timer::tick("Gint_k", "cal_band_rho");
+                cal_band_rho(
 					size, 
 					grid_index, 
 					LD_pool, 
@@ -509,8 +520,9 @@ void Gint_k::cal_rho_k(void)
 					psir_DM_pool, 
 					vindex, 
 					cal_flag);
+                ModuleBase::timer::tick("Gint_k", "cal_band_rho");
 
-			}// int k
+            }// int k
 		}// int j
 	} // int i
 

@@ -603,8 +603,9 @@ void Gint_k::evaluate_vl_stress(
 				//--------------------------------------------------------------- 
 
 				const int iatw = DM_start + GlobalC::LNNR.find_R2st[iat][offset];
-				
-				for(int ib=0; ib<gt.bxyz; ++ib)
+
+                ModuleBase::timer::tick("Gint_K_fvl", "vl_stress_MMulM");
+                for(int ib=0; ib<gt.bxyz; ++ib)
 				{
 					if(cal_flag[ib][ia1] && cal_flag[ib][ia2])
 					{
@@ -689,6 +690,7 @@ void Gint_k::evaluate_vl_stress(
 						}// iw
 					}//end flag
 				}//end ib
+                ModuleBase::timer::tick("Gint_K_fvl", "vl_stress_MMulM");
             }// T
         }// ia2
 	}//ia1
@@ -828,7 +830,8 @@ void Gint_k::evaluate_vl_force(const int &grid_index, const int &size, const int
 
                     const int iatw = DM_start + GlobalC::LNNR.find_R2st[iat][offset];
 
-					for(int ib=0; ib<gt.bxyz; ++ib)
+                    ModuleBase::timer::tick("Gint_K_fvl", "vl_force_MMulM");
+                    for(int ib=0; ib<gt.bxyz; ++ib)
 					{
 						if(cal_flag[ib][ia1] && cal_flag[ib][ia2])
 						{
@@ -899,7 +902,8 @@ void Gint_k::evaluate_vl_force(const int &grid_index, const int &size, const int
                             }// iw
                         }//end flag
                 	}//end ib
-            	}// T
+                    ModuleBase::timer::tick("Gint_K_fvl", "vl_force_MMulM");
+                }// T
         	}// ia2
         }//ia1
 

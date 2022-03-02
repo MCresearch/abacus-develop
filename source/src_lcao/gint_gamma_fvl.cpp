@@ -322,6 +322,7 @@ inline void cal_meshball_DGridV(
             }
             //++cal_flag_true;
             //OUT(GlobalV::ofs_running,"cal_num:", cal_num);
+            ModuleBase::timer::tick("Gint_Gamma","DGridV_MMulM");
             if (cal_num > GlobalC::pw.bxyz/2)
 //            if(0)
             {
@@ -459,6 +460,7 @@ inline void cal_meshball_DGridV(
 					}                    
                 }
             }
+            ModuleBase::timer::tick("Gint_Gamma","DGridV_MMulM");
         }
     }
 }
