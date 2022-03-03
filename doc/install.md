@@ -69,7 +69,7 @@ present:
 - [FFTW](http://www.fftw.org/).
 - [ELPA](https://elpa.mpcdf.mpg.de/).
 - [CEREAL](https://uscilab.github.io/cereal/).
-
+- [Eigen](https://eigen.tuxfamily.org/).
 Alternatively, you can choose [Intel® oneAPI toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/commercial-base-hpc.html) (former Parallel Studio) as toolchain. The [Intel® oneAPI Base Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/all-toolkits.html#base-kit) contains Intel® oneAPI Math Kernel Library (aka `MKL`), including `BLAS`, `LAPACK`, `ScaLAPACK` and `FFTW3`,  - this means that no Fortran compiler required anymore. The [Intel® oneAPI HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/all-toolkits.html#hpc-kit) contains Intel® MPI Library, and C++ compiler(including MPI compiler). Please noted that building `elpa` with a different MPI library may cause conflict between MPI libraries. Don't forget to [set environment variables](https://software.intel.com/content/www/us/en/develop/documentation/get-started-with-intel-oneapi-render-linux/top/configure-your-system.html) before you start! `cmake` will use Intel MKL if the environment variable `MKLROOT` is set.
 
 If you have trouble building requirements, our Dockerfiles in root path offer a reference, or read the section below to use a pre-built container.
@@ -103,7 +103,7 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=${ABACUS_BIN_PATH}
 ```
 
 You can provide path of each dependent package if the package cannot be automatically found by cmake.
-Keys `LAPACK_DIR`, `SCALAPACK_DIR`, `ELPA_DIR`, `FFTW3_DIR`, `CEREAL_INCLUDEDIR`, `MPI_CXX_COMPILER` and `MKLROOT` are currently available to specify.
+Keys `LAPACK_DIR`, `SCALAPACK_DIR`, `ELPA_DIR`, `Eigen3_DIR`, `FFTW3_DIR`, `CEREAL_INCLUDEDIR`, `MPI_CXX_COMPILER` and `MKLROOT` are currently available to specify.
 For example:
 
 ```bash

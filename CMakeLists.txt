@@ -167,6 +167,8 @@ else()
     message(WARNING "Cannot find the correct library for Fortran.")
   endif()
 endif()
+find_package (Eigen3 REQUIRED)
+list(APPEND math_libs Eigen3::Eigen)
 target_link_libraries(${ABACUS_BIN_NAME} ${math_libs})
 
 if(ENABLE_DEEPKS)
